@@ -1,4 +1,4 @@
-import express from "express"
+import express from 'express'
 import { mapOrder } from './utilities/sort.js'
 
 const app = express()
@@ -7,9 +7,9 @@ const hostName = 'localhost'
 const port = 8080
 
 app.get('/', (req, res) => {
-    res.end('<h1>Hello may</h1><hr/>')
+  res.end('<h1>Hello Worlddsdsdsdsd</h1><hr/>')
 })
 
 app.listen(port, hostName, () => {
-    console.log(`Hello may, tao day , dang chay tren moi truong ${hostName}:${port}/`)
+  console.log(`${hostName}:${port}/  -> is running`)
 })
