@@ -7,7 +7,7 @@ const hostName = 'localhost'
 const port = 8080
 
 app.get('/', (req, res) => {
-    res.end('<h1>Hello mayddd</h1><hr/>')
+    res.end('<h1>Hello may</h1><hr/>')
 })
 
 app.listen(port, hostName, () => {
