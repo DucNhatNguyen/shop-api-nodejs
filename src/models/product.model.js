@@ -4,18 +4,18 @@ import { getDB } from '../config/mongodb.js'
 // Define Product Colection
 const productCollectionName = 'products'
 const productCollectionSchema = Joi.object({
-  productID: Joi.string().required().min(2).max(20),
-  productName: Joi.string().required().min(2).max(200),
-  categoryID: Joi.string().required().min(2).max(30),
-  unitPrice: Joi.string().required().min(2),
+  productCode: Joi.string().required().min(2).max(20).trim(),
+  productName: Joi.string().required().min(2).max(200).trim(),
+  categoryID: Joi.string().required().min(2).max(30).trim(),
+  unitPrice: Joi.string().required().min(2).trim(),
   quantity: Joi.number().default(0),
   isSale: Joi.boolean().default(false),
   isNew: Joi.boolean().default(false),
   reduceRate: Joi.number().default(0),
-  description: Joi.string().default(null),
+  description: Joi.string().default(null).trim(),
   image: Joi.array().items(Joi.object({
-    imageName: Joi.string().default(null),
-    imageFolder: Joi.string().default(null)
+    imageName: Joi.string().default(null).trim(),
+    imageFolder: Joi.string().default(null).trim()
   })).default([])
 })
 
@@ -30,15 +30,15 @@ const validateSchema = async (data) => {
 const createNew = async (data) => {
   try {
     const value = await validateSchema(data)
-    await getDB()
+    const op = await getDB()
       .collection(productCollectionName)
       .insertOne(value)
 
-    const result = getDB().collection(productCollectionName).findOne({ productID: data.productID })
+    const result = getDB().collection(productCollectionName).findOne({ productCode: data.productCode })
     return result
 
   } catch (error) {
-    console.log(error)
+    throw new Error(error) //day loi sang service -> day cho controller -> show error
   }
 }
 
