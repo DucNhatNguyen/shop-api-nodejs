@@ -12,10 +12,11 @@ const productCollectionSchema = Joi.object({
   isSale: Joi.boolean().default(false),
   isNew: Joi.boolean().default(false),
   reduceRate: Joi.number().default(0),
-  description: Joi.string().default(null).trim(),
+  description: Joi.string().default('').trim(),
   image: Joi.array().items(Joi.object({
     imageName: Joi.string().default(null).trim(),
-    imageFolder: Joi.string().default(null).trim()
+    imageFolder: Joi.string().default(null).trim(),
+    isMain:  Joi.boolean().default(false)
   })).default([])
 })
 
@@ -42,4 +43,15 @@ const createNew = async (data) => {
   }
 }
 
-export const ProductModel = { createNew }
+const getSales = async () => {
+  try {
+    const result = getDB().collection(productCollectionName)
+      .find({ isSale: { $eq: true } }).toArray()
+    return result
+
+  } catch (error) {
+    throw new Error(error) //day loi sang service -> day cho controller -> show error
+  }
+}
+
+export const ProductModel = { createNew, getSales }

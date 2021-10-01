@@ -13,4 +13,16 @@ const createNew = async (req, res) => {
   }
 }
 
-export const ProductController = { createNew }
+const getSales = async (req, res) => {
+  try {
+    const result = await ProductService.getSales()
+    res.status(HttpStatusCode.OK).json(result)
+
+  } catch (error) {
+    res.status(HttpStatusCode.INTERNAL_SERVER).json({
+      errors: error.message
+    })
+  }
+}
+
+export const ProductController = { createNew, getSales }

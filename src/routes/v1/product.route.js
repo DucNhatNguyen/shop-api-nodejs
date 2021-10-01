@@ -8,4 +8,7 @@ router.route('/')
   //.get((req, res) => console.log('Get product'))
   .post(ProductValidation.createNew, ProductController.createNew)
 
+router.route('/sales')
+  .get(ProductController.getSales)
+
 export const productRoutes = router
