@@ -11,4 +11,10 @@ router.route('/')
 router.route('/sales')
   .get(ProductController.getSales)
 
+router.route('/news')
+  .get(ProductController.getNewProducts)
+
+router.route('/detail/:id')
+  .get(ProductController.getDetail)
+
 export const productRoutes = router

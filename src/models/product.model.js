@@ -45,8 +45,31 @@ const createNew = async (data) => {
 
 const getSales = async () => {
   try {
-    const result = getDB().collection(productCollectionName)
-      .find({ isSale: { $eq: true } }).toArray()
+    const result = await getDB().collection(productCollectionName)
+      .aggregate([
+        {
+          $match: {
+            $and: [
+              { isSale: { $eq: true } },
+              { quantity: { $gt: 0 } }
+            ]
+          }
+        },
+        {
+          $lookup:
+          {
+            from: 'categories',
+            localField: 'categoryID',
+            foreignField: 'categoryCode',
+            as: 'Category'
+          }
+        },
+        {
+          $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ '$Category', 0 ] }, '$$ROOT' ] } }
+        },
+        { $project: { Category: 0 } }
+      ]).toArray()
+
     return result
 
   } catch (error) {
@@ -54,4 +77,104 @@ const getSales = async () => {
   }
 }
 
-export const ProductModel = { createNew, getSales }
+const getNewProducts = async () => {
+  try {
+    const result = await getDB().collection(productCollectionName)
+      .aggregate([
+        {
+          $match: {
+            $and: [
+              { isNew: { $eq: true } },
+              { quantity: { $gt: 0 } }
+            ]
+          }
+        },
+        {
+          $lookup:
+          {
+            from: 'categories',
+            localField: 'categoryID',
+            foreignField: 'categoryCode',
+            as: 'Category'
+          }
+        },
+        {
+          $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ '$Category', 0 ] }, '$$ROOT' ] } }
+        },
+        { $project: { Category: 0 } }
+      ]).toArray()
+
+    return result
+
+  } catch (error) {
+    throw new Error(error) //day loi sang service -> day cho controller -> show error
+  }
+}
+
+const getDetail = async (id) => {
+  try {
+    const result = await getDB().collection(productCollectionName)
+      .aggregate([
+        {
+          $match: {
+            $and: [
+              { productCode: { $eq: id } }
+            ]
+          }
+        },
+        {
+          $lookup:
+          {
+            from: 'categories',
+            localField: 'categoryID',
+            foreignField: 'categoryCode',
+            as: 'Category'
+          }
+        },
+        {
+          $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ '$Category', 0 ] }, '$$ROOT' ] } }
+        },
+        { $project: { Category: 0 } }
+      ]).toArray()
+
+    return result[0] || {}
+
+  } catch (error) {
+    throw new Error(error) //day loi sang service -> day cho controller -> show error
+  }
+}
+
+const getSideDishes = async () => {
+  try {
+    const result = await getDB().collection(productCollectionName)
+      .aggregate([
+        {
+          $match: {
+            $and: [
+              { categoryID: { $eq: 'CA-07' } }
+            ]
+          }
+        },
+        {
+          $lookup:
+          {
+            from: 'categories',
+            localField: 'categoryID',
+            foreignField: 'categoryCode',
+            as: 'Category'
+          }
+        },
+        {
+          $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ '$Category', 0 ] }, '$$ROOT' ] } }
+        },
+        { $project: { Category: 0 } }
+      ]).toArray()
+
+    return result
+
+  } catch (error) {
+    throw new Error(error) //day loi sang service -> day cho controller -> show error
+  }
+}
+
+export const ProductModel = { createNew, getSales, getNewProducts, getDetail, getSideDishes }
