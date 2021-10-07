@@ -3,6 +3,8 @@ import { getDB } from '../config/mongodb.js'
 
 // Define Product Colection
 const productCollectionName = 'products'
+const categoryCollectionName = 'categories'
+
 const productCollectionSchema = Joi.object({
   productCode: Joi.string().required().min(2).max(20).trim(),
   productName: Joi.string().required().min(2).max(200).trim(),
@@ -177,4 +179,122 @@ const getSideDishes = async () => {
   }
 }
 
-export const ProductModel = { createNew, getSales, getNewProducts, getDetail, getSideDishes }
+const getProductRelative = async (id) => {
+  try {
+    const category = await getDB().collection(productCollectionName)
+      .aggregate([
+        {
+          $match: {
+            $and: [
+              { productCode: { $eq: id } }
+            ]
+          }
+        }
+      ])
+      .project({ categoryID: 1, _id: 0 }).toArray()
+
+    const categoryid = category[0].categoryID
+
+    const result = await getDB().collection(productCollectionName)
+      .aggregate([
+        {
+          $match: {
+            $and: [
+              { categoryID: { $eq: categoryid } },
+              { productCode: { $ne: id } }
+            ]
+          }
+        },
+        {
+          $lookup:
+          {
+            from: 'categories',
+            localField: 'categoryID',
+            foreignField: 'categoryCode',
+            as: 'Category'
+          }
+        },
+        {
+          $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ '$Category', 0 ] }, '$$ROOT' ] } }
+        },
+        { $project: { Category: 0 } }
+      ]).toArray()
+
+    return result
+
+  } catch (error) {
+    throw new Error(error) //day loi sang service -> day cho controller -> show error
+  }
+}
+
+const getProductByCategoryId = async (id, limit, skip) => {
+  try {
+    const category = await getDB().collection(categoryCollectionName)
+      .aggregate([
+        {
+          $match: {
+            $and: [
+              { categoryCode: { $eq: id } }
+            ]
+          }
+        }
+      ])
+      .project({ categoryCode: 1, categoryName:1, _id: 0 }).toArray()
+
+    const result = await getDB().collection(productCollectionName)
+      .aggregate([
+        {
+          $match: {
+            $and: [
+              { categoryID: { $eq: id } }
+            ]
+          }
+        },
+        { $skip: (parseInt(skip) - 1) * parseInt(limit) },
+        { $limit: parseInt(limit) },
+        {
+          $lookup:
+          {
+            from: 'categories',
+            localField: 'categoryID',
+            foreignField: 'categoryCode',
+            as: 'Category'
+          }
+        },
+        {
+          $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ '$Category', 0 ] }, '$$ROOT' ] } }
+        },
+        { $project: { Category: 0 } }
+      ]).toArray()
+
+    const count = await getDB().collection(productCollectionName)
+      .aggregate([
+        {
+          $match: {
+            $and: [
+              { categoryID: { $eq: id } }
+            ]
+          }
+        },
+        { $count: 'total' }
+      ]).toArray()
+
+    return {
+      data: result,
+      categoryName: category[0].categoryName,
+      total: count[0] === undefined ? 0 : count[0].total
+    }
+
+  } catch (error) {
+    throw new Error(error) //day loi sang service -> day cho controller -> show error
+  }
+}
+
+
+export const ProductModel = { createNew,
+  getSales,
+  getNewProducts,
+  getDetail,
+  getSideDishes,
+  getProductRelative,
+  getProductByCategoryId }

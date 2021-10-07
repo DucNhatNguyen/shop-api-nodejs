@@ -50,4 +50,39 @@ const getDetail = async (req, res) => {
   }
 }
 
-export const ProductController = { createNew, getSales, getNewProducts, getDetail }
+const getProductRelative = async (req, res) => {
+  try {
+    const { id } = req.params
+    const result = await ProductService.getProductRelative(id)
+    res.status(HttpStatusCode.OK).json(result)
+
+  } catch (error) {
+    res.status(HttpStatusCode.INTERNAL_SERVER).json({
+      errors: error.message
+    })
+  }
+}
+
+const getProductByCategoryId = async (req, res) => {
+  try {
+    //const { id, limit, skip } = req.params
+    var id = req.query.id
+    var limit = req.query.limit
+    var skip = req.query.skip
+
+    const result = await ProductService.getProductByCategoryId(id, limit, skip)
+    res.status(HttpStatusCode.OK).json(result)
+
+  } catch (error) {
+    res.status(HttpStatusCode.INTERNAL_SERVER).json({
+      errors: error.message
+    })
+  }
+}
+
+export const ProductController = { createNew,
+  getSales,
+  getNewProducts,
+  getDetail,
+  getProductRelative,
+  getProductByCategoryId }

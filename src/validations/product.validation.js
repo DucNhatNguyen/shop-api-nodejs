@@ -28,4 +28,19 @@ const createNew = async (req, res, next) => {
   }
 }
 
-export const ProductValidation = { createNew }
+const getProductByCategoryID = async (req, res, next) => {
+  const condition = Joi.object({
+    productCode: Joi.string().required().min(2).max(20).trim(),
+    categoryID: Joi.string().required().min(2).max(30).trim()
+  })
+  try {
+    await condition.validateAsync(req.body, { abortEarly: false })
+    next()
+  } catch (error) {
+    res.status(HttpStatusCode.BAD_REQUEST).json({
+      errors: new Error(error).message
+    })
+  }
+}
+
+export const ProductValidation = { createNew, getProductByCategoryID }

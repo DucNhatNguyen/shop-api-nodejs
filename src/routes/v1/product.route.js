@@ -17,4 +17,10 @@ router.route('/news')
 router.route('/detail/:id')
   .get(ProductController.getDetail)
 
+router.route('/getProductRelative/:id')
+  .get(ProductController.getProductRelative)
+
+router.route('/getProductByCategoryId')
+  .get(ProductController.getProductByCategoryId)
+
 export const productRoutes = router
